@@ -1,0 +1,59 @@
+# .gitignore for workout-backend (Node.js)
+
+# Environment files (don't commit secrets)
+.env
+.env.local
+.env.*.local
+# Keep an example env file tracked
+!.env.example
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Runtime files
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.cache/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Package archives
+*.tgz
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+
+# Optional secrets
+secrets.json
+.env.*.secret
+
+# End of .gitignore
