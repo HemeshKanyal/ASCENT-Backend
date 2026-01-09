@@ -1,8 +1,3 @@
-/**
- * Stage 6.1 — Performance Metrics Extraction
- * Converts workout session history into normalized exercise performance data
- */
-
 export function extractExercisePerformance(sessions = []) {
   const performanceMap = {};
 
