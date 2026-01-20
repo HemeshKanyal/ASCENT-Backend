@@ -29,7 +29,7 @@ ASCENT-Backend is a RESTful API built with Node.js and Express. It serves as the
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/HemeshKanyal/ASCENT-Backend.git
    cd workout-backend
    ```
 
