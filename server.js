@@ -12,6 +12,12 @@ app.use(cors());
 
 app.use(express.json());
 
+app.use(
+  "/api/sync/evolution",
+  require("./routes/syncEvolutionRoutes")
+);
+
+
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/exercises", require("./routes/exerciseRoutes"));
 app.use("/api/splits", require("./routes/splitRoutes"));
