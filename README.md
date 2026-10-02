@@ -79,3 +79,12 @@ For a detailed look at the project's architecture, please refer to [ARCHITECTURE
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+## Community API (phase 2)
+
+Friends (by code or @handle), posts with photos/videos (GridFS, streamed with HTTP Range), kudos, comments, clubs with invite codes, weekly leaderboards and an in-app inbox. Requires `MONGO_URI` and a `JWT_SECRET` of at least 32 characters (see `.env.example`).
+
+```bash
+npm test   # runs against an in-memory MongoDB (mongodb-memory-server)
+npm start
+```
