@@ -213,6 +213,29 @@ describe("clubs and leaderboards", () => {
   });
 });
 
+describe("profile photo", () => {
+  it("sets, replaces and removes an avatar, visible to friends via a signed link", async () => {
+    const u = await signup("Ira", "ira");
+    const v = await signup("Jai", "jai");
+    await befriend(u, v);
+    const png = Buffer.alloc(300, 7).toString("base64");
+    const r = await call("PUT", "/api/auth/me/avatar", { token: u.token, body: { mimeType: "image/png", data: png } });
+    assert.equal(r.status, 200);
+    assert.match(r.body.user.avatarUrl, /^\/api\/media\/[a-f0-9]{24}\?exp=\d+&sig=/);
+    const img = await fetch(base + r.body.user.avatarUrl);
+    assert.equal(img.headers.get("content-type"), "image/png");
+
+    const friends = await call("GET", "/api/friends", { token: v.token });
+    assert.ok(friends.body.friends[0].user.avatarUrl);
+
+    const again = await call("PUT", "/api/auth/me/avatar", { token: u.token, body: { mimeType: "image/png", data: png } });
+    assert.notEqual(again.body.user.avatarUrl.split("?")[0], r.body.user.avatarUrl.split("?")[0]);
+    assert.equal(await mongoose.connection.db.collection("media.files").countDocuments({ "metadata.kind": "avatar", "metadata.owner": new mongoose.Types.ObjectId(u.id) }), 1);
+    assert.equal((await call("PUT", "/api/auth/me/avatar", { token: u.token, body: { mimeType: "text/html", data: png } })).status, 400);
+    assert.equal((await call("DELETE", "/api/auth/me/avatar", { token: u.token })).body.user.avatarUrl, null);
+  });
+});
+
 describe("account deletion", () => {
   it("removes the user's posts, friendships and media", async () => {
     const g = await signup("Gia", "gia");

@@ -13,7 +13,7 @@ const Notification = require("../models/Notification");
 const Post = require("../models/Post");
 const User = require("../models/User");
 const WeeklyStat = require("../models/WeeklyStat");
-const { deleteFiles } = require("../services/media");
+const { deleteFiles, mediaBucket } = require("../services/media");
 
 const router = express.Router();
 
@@ -114,10 +114,45 @@ router.patch("/me", auth, validate(Update), async (req, res) => {
   res.json({ user: me(user) });
 });
 
+const Avatar = z.object({
+  mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  // ~1.5 MB of image after base64 decoding; the app resizes to 512 px first.
+  data: z.string().min(100).max(2_000_000),
+});
+
+/** Set the profile photo (base64 in JSON keeps uploads identical on web and phones). */
+router.put("/me/avatar", auth, validate(Avatar), async (req, res) => {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(401).json({ message: "Account not found" });
+  const bytes = Buffer.from(req.body.data, "base64");
+  if (bytes.length < 50) return res.status(400).json({ message: "That isn't an image" });
+  const upload = mediaBucket().openUploadStream(`avatar-${user._id}`, { metadata: { owner: user._id, mimeType: req.body.mimeType, kind: "avatar" } });
+  await new Promise((resolve, reject) => {
+    upload.on("error", reject);
+    upload.on("finish", resolve);
+    upload.end(bytes);
+  });
+  const old = user.avatarFileId;
+  user.avatarFileId = upload.id;
+  await user.save();
+  if (old) await deleteFiles([old]);
+  res.json({ user: me(user) });
+});
+
+router.delete("/me/avatar", auth, async (req, res) => {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(401).json({ message: "Account not found" });
+  if (user.avatarFileId) await deleteFiles([user.avatarFileId]);
+  user.avatarFileId = undefined;
+  await user.save();
+  res.json({ user: me(user) });
+});
+
 /** Delete the account and everything it shared. */
 router.delete("/me", auth, async (req, res) => {
   const posts = await Post.find({ owner: req.userId }).lean();
-  await deleteFiles(posts.flatMap((p) => p.media.map((m) => m.fileId)));
+  const user = await User.findById(req.userId).lean();
+  await deleteFiles([...posts.flatMap((p) => p.media.map((m) => m.fileId)), ...(user?.avatarFileId ? [user.avatarFileId] : [])]);
   const postIds = posts.map((p) => p._id);
   await Promise.all([
     Comment.deleteMany({ $or: [{ post: { $in: postIds } }, { author: req.userId }] }),
