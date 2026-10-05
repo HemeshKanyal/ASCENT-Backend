@@ -6,6 +6,7 @@ Express 5 + Mongoose 9 (CommonJS) API for the ASCENT app (`../ASCENT-Frontend`).
 
 - `npm test` — `node --test test/*.test.js` against an in-memory MongoDB (`mongodb-memory-server`, downloads a mongod binary on first run). No real DB needed.
 - `npm run dev` (nodemon) / `npm start` — needs `.env` with `MONGO_URI` and `JWT_SECRET` (≥ 32 chars); see `.env.example`. `config/env.js` fails fast if missing.
+- Hosted on Render (free) from `main` via `render.yaml`; database is MongoDB Atlas. `GET /health` reports DB state. See README "Deploy".
 
 ## Layout
 

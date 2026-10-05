@@ -1,0 +1,19 @@
+# Render Blueprint: New → Blueprint → pick this repo. Render creates the web
+# service, generates JWT_SECRET, and asks you to paste MONGO_URI (Atlas).
+services:
+  - type: web
+    name: ascent-backend
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

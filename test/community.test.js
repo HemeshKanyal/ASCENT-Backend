@@ -249,3 +249,11 @@ describe("account deletion", () => {
     assert.equal(await mongoose.connection.db.collection("media.files").countDocuments({ "metadata.post": new mongoose.Types.ObjectId(post.id) }), 0);
   });
 });
+
+describe("hosting", () => {
+  it("reports health with the database state", async () => {
+    const r = await call("GET", "/health");
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.body, { ok: true, db: "connected" });
+  });
+});

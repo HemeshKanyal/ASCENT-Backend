@@ -1,6 +1,8 @@
 const cors = require("cors");
 const express = require("express");
+const { rateLimit } = require("express-rate-limit");
 const helmet = require("helmet");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -8,6 +10,25 @@ const app = express();
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.set("trust proxy", 1);
+
+// Hosting health check: up only when the database is connected.
+app.get("/health", (req, res) => {
+  const db = mongoose.connection.readyState === 1;
+  res.status(db ? 200 : 503).json({ ok: db, db: db ? "connected" : "disconnected" });
+});
+
+// A ceiling per IP so one runaway client can't exhaust the free tier. Media
+// downloads (signed links, video range requests) are exempt.
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: Number(process.env.API_RATE_LIMIT) || 900,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    skip: (req) => req.path.startsWith("/media/"),
+  }),
+);
 
 // Raw uploads stream on their own; everything else is JSON.
 app.use((req, res, next) => (/^\/api\/posts\/[^/]+\/media$/.test(req.path) ? next() : express.json({ limit: "2mb" })(req, res, next)));

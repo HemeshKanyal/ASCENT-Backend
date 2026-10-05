@@ -88,3 +88,12 @@ Friends (by code or @handle), posts with photos/videos (GridFS, streamed with HT
 npm test   # runs against an in-memory MongoDB (mongodb-memory-server)
 npm start
 ```
+
+## Deploy (Render + MongoDB Atlas)
+
+1. **Atlas**: create a free M0 cluster, a database user, and allow network access from `0.0.0.0/0` (Render's free tier has no fixed IP). Copy the connection string and add the database name, e.g. `…mongodb.net/ascent?retryWrites=true&w=majority`.
+2. **Render**: New → Blueprint → this repo. `render.yaml` sets up the service, generates `JWT_SECRET`, and asks for `MONGO_URI`.
+3. Check `https://<service>.onrender.com/health` → `{"ok":true,"db":"connected"}`.
+4. Point the app at it with `EXPO_PUBLIC_API_URL=https://<service>.onrender.com` in ASCENT-Frontend.
+
+The free plan sleeps after ~15 minutes idle; the first request after that takes 30–60 s. Media lives in MongoDB (GridFS), so the free 512 MB covers a small group of friends — watch usage in Atlas.
