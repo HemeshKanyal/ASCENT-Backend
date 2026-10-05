@@ -89,10 +89,14 @@ npm test   # runs against an in-memory MongoDB (mongodb-memory-server)
 npm start
 ```
 
+## Meal photo AI
+
+`POST /api/meal-photo` with `{ image?: base64, mediaType?, hint? }` returns a meal estimate (foods, portions, macros) from Gemini. No login needed; limited to 30 calls per IP per hour (`MEAL_RATE_LIMIT`). Needs `GEMINI_API_KEY`, a free key from https://aistudio.google.com/apikey. If the main model is overloaded or out of free quota, it falls back to `gemini-flash-lite-latest`.
+
 ## Deploy (Render + MongoDB Atlas)
 
 1. **Atlas**: create a free M0 cluster, a database user, and allow network access from `0.0.0.0/0` (Render's free tier has no fixed IP). Copy the connection string and add the database name, e.g. `…mongodb.net/ascent?retryWrites=true&w=majority`.
-2. **Render**: New → Blueprint → this repo. `render.yaml` sets up the service, generates `JWT_SECRET`, and asks for `MONGO_URI`.
+2. **Render**: New → Blueprint → this repo. `render.yaml` sets up the service, generates `JWT_SECRET`, and asks for `MONGO_URI` and `GEMINI_API_KEY`. On an existing service, add `GEMINI_API_KEY` under Environment.
 3. Check `https://<service>.onrender.com/health` → `{"ok":true,"db":"connected"}`.
 4. Point the app at it with `EXPO_PUBLIC_API_URL=https://<service>.onrender.com` in ASCENT-Frontend.
 

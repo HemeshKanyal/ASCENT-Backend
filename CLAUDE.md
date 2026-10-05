@@ -13,6 +13,7 @@ Express 5 + Mongoose 9 (CommonJS) API for the ASCENT app (`../ASCENT-Frontend`).
 - `app.js` builds the Express app (exported for tests); `server.js` loads env, connects Mongo, listens (default port 5000).
 - `routes/*Routes.js` — one router per resource; validate bodies with zod via `middleware/validate.js`; auth via `middleware/authMiddleware.js` (`Authorization: Bearer <jwt>`, sets `req.userId`).
 - `services/social.js` — friend/club lookups, `canSee(post, userId)` visibility rule, signed media links, `serializePost`, `notify`.
+- `services/mealEstimate.js` + `routes/mealRoutes.js` — `POST /api/meal-photo` (Gemini via REST, no login, own 8 MB JSON limit and per-IP hourly limit). Needs `GEMINI_API_KEY`; falls back to the lite model on 429/503.
 - `services/media.js` — GridFS bucket `media`. Uploads stream raw bodies (`POST /api/posts/:id/media`, Content-Type image/* or video/*); downloads support HTTP Range (needed for iOS video).
 
 ## Rules

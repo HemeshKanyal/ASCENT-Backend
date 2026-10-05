@@ -30,8 +30,10 @@ app.use(
   }),
 );
 
-// Raw uploads stream on their own; everything else is JSON.
-app.use((req, res, next) => (/^\/api\/posts\/[^/]+\/media$/.test(req.path) ? next() : express.json({ limit: "2mb" })(req, res, next)));
+// Raw uploads stream on their own and meal photos parse their own larger
+// body; everything else is JSON.
+const ownBody = (path) => /^\/api\/posts\/[^/]+\/media$/.test(path) || path === "/api/meal-photo";
+app.use((req, res, next) => (ownBody(req.path) ? next() : express.json({ limit: "2mb" })(req, res, next)));
 
 app.use("/api/sync/evolution", require("./routes/syncEvolutionRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
@@ -49,6 +51,9 @@ app.use("/api/leaderboard", require("./routes/leaderboardRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/media", require("./routes/mediaRoutes"));
 
+// Meal photo AI (Gemini)
+app.use("/api/meal-photo", require("./routes/mealRoutes"));
+
 app.get("/", (req, res) => {
   res.send("Workout API Running");
 });
@@ -57,7 +62,7 @@ app.use((req, res) => res.status(404).json({ message: "Not found" }));
 
 // Express 5 forwards async errors here.
 app.use((err, req, res, _next) => {
-  if (err.type === "entity.too.large") return res.status(413).json({ message: "Request too large" });
+  if (err.type === "entity.too.large") return res.status(413).json({ message: "Request too large", error: "too_large" });
   if (err.type === "entity.parse.failed") return res.status(400).json({ message: "Invalid JSON" });
   if (err.code === 11000) return res.status(409).json({ message: "Already exists" });
   console.error(err);
